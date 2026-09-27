@@ -1,0 +1,45 @@
+# ===================================================
+#  AntiDDoS-RanzDev - Configuration
+#  by ranz-coder (ranzzawok.my.id)
+# ===================================================
+
+# Per-IP join rate limiting.
+# If an IP attempts to log in more than 'max-joins-per-ip' times within
+# 'join-window-seconds', it is temporarily blocked. This is the main defense
+# against bot-flood / login-flood attacks (repeated fake login attempts).
+max-joins-per-ip: 4
+join-window-seconds: 10
+
+# How long an auto-blocked IP stays blocked, in seconds.
+temp-ban-duration-seconds: 300
+
+# Global lockdown: if the WHOLE server receives more than this many new
+# connection attempts within 1 second, lockdown mode activates and blocks
+# every non-whitelisted join attempt for 'lockdown-duration-seconds'.
+# This is what protects you from a mass bot-swarm attack.
+max-global-joins-per-second: 20
+lockdown-duration-seconds: 30
+
+# Reject usernames that don't match a valid Minecraft username pattern
+# (letters, numbers, underscore, 3-16 chars). Most bot floods use random
+# garbage usernames, so this blocks a large share of them for free.
+strict-username-validation: true
+
+# Server list ping (MOTD) flood protection - only fully effective on Paper,
+# since Paper's ping event can actually be cancelled.
+max-pings-per-ip-per-10s: 10
+
+# Messages shown to blocked players.
+kick-message-blacklisted: "&cAnda telah diblokir dari server ini."
+kick-message-temp-blocked: "&cTerlalu banyak percobaan koneksi. Coba lagi nanti."
+kick-message-lockdown: "&cServer sedang dalam mode proteksi DDoS. Coba lagi sebentar lagi."
+kick-message-invalid-username: "&cUsername tidak valid."
+
+# IPs that are NEVER blocked, regardless of rate limits.
+whitelist: []
+
+# IPs that are ALWAYS blocked immediately.
+blacklist: []
+
+# Log blocked attempts to console.
+log-to-console: true

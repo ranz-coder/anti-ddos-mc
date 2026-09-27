@@ -1,0 +1,21 @@
+name: AntiDDoS-RanzDev
+main: id.ranzzawok.antiddos.AntiDDoSPlugin
+version: 1.0.0
+author: ranz-coder
+description: Anti bot-flood / connection-flood / login-flood protection
+website: https://ranzzawok.my.id
+
+# api-version intentionally omitted so this plugin loads on as wide a
+# range of Bukkit/Spigot/Paper versions as possible (old and new).
+
+commands:
+  antiddos:
+    description: Manage AntiDDoS-RanzDev
+    usage: /antiddos <status|reload|whitelist|blacklist|unban>
+    permission: antiddos.admin
+    aliases: [addos, adddos]
+
+permissions:
+  antiddos.admin:
+    description: Access to AntiDDoS admin commands
+    default: op
