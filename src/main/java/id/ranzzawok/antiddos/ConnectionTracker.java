@@ -111,9 +111,10 @@ public class ConnectionTracker {
         long until = System.currentTimeMillis() + plugin.getConfigManager().tempBanDurationSeconds() * 1000L;
         tempBlocked.put(ip, until);
         persistBlocks();
-        if (plugin.getConfigManager().logToConsole()) {
-            plugin.getLogger().warning("[AntiDDoS] IP diblokir sementara (join-flood): " + ip);
-        }
+        plugin.getAttackLogger().log("TEMP_BAN", ip,
+                "melebihi " + plugin.getConfigManager().maxJoinsPerIp() + " percobaan login dalam "
+                        + plugin.getConfigManager().joinWindowSeconds() + "s, diblokir "
+                        + plugin.getConfigManager().tempBanDurationSeconds() + "s");
     }
 
     public void unblockIp(String ip) {
@@ -126,14 +127,16 @@ public class ConnectionTracker {
         boolean wasActive = isLockdownActive();
         lockdownUntil = System.currentTimeMillis() + durationMs;
         if (!wasActive) {
-            plugin.getLogger().warning("[AntiDDoS] LOCKDOWN MODE AKTIF! Deteksi lonjakan koneksi tidak wajar ("
-                    + plugin.getConfigManager().maxGlobalJoinsPerSecond() + "+ joins/detik). Server dilindungi selama "
-                    + plugin.getConfigManager().lockdownDurationSeconds() + " detik.");
-            Bukkit.getOnlinePlayers().forEach(p -> {
-                if (p.hasPermission("antiddos.admin")) {
-                    p.sendMessage("§c[AntiDDoS] §fLockdown mode diaktifkan - kemungkinan serangan bot/connection flood terdeteksi!");
+            plugin.getAttackLogger().log("LOCKDOWN_START", "SERVER-WIDE",
+                    "lonjakan " + plugin.getConfigManager().maxGlobalJoinsPerSecond()
+                            + "+ koneksi/detik terdeteksi - lockdown " + plugin.getConfigManager().lockdownDurationSeconds() + "s");
+
+            // Schedule a log entry for when lockdown naturally expires.
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!isLockdownActive()) {
+                    plugin.getAttackLogger().log("LOCKDOWN_END", "SERVER-WIDE", "lockdown mode berakhir otomatis");
                 }
-            });
+            }, durationMs / 50L); // ticks
         }
     }
 

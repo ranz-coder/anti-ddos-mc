@@ -12,6 +12,7 @@ public class AntiDDoSPlugin extends JavaPlugin {
 
     private ConfigManager configManager;
     private ConnectionTracker tracker;
+    private AttackLogger attackLogger;
 
     @Override
     public void onEnable() {
@@ -19,6 +20,7 @@ public class AntiDDoSPlugin extends JavaPlugin {
 
         saveDefaultConfig();
         this.configManager = new ConfigManager(this);
+        this.attackLogger = new AttackLogger(this);
         this.tracker = new ConnectionTracker(this);
 
         getServer().getPluginManager().registerEvents(new ConnectionListener(this), this);
@@ -68,5 +70,9 @@ public class AntiDDoSPlugin extends JavaPlugin {
 
     public ConnectionTracker getTracker() {
         return tracker;
+    }
+
+    public AttackLogger getAttackLogger() {
+        return attackLogger;
     }
 }

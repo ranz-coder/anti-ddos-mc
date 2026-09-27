@@ -36,26 +36,28 @@ public class ConnectionListener implements Listener {
         // 2. Permanent blacklist.
         if (plugin.getConfigManager().blacklist().contains(ip)) {
             deny(event, plugin.getConfigManager().msgBlacklisted());
-            log("Blacklisted IP ditolak: " + ip);
+            plugin.getAttackLogger().log("BLACKLIST_HIT", ip, "username=" + name);
             return;
         }
 
         // 3. Currently auto temp-blocked from a previous flood.
         if (plugin.getTracker().isTempBlocked(ip)) {
             deny(event, plugin.getConfigManager().msgTempBlocked());
+            plugin.getAttackLogger().log("TEMP_BLOCK_HIT", ip, "mencoba login saat masih diblokir, username=" + name);
             return;
         }
 
         // 4. Server-wide lockdown mode.
         if (plugin.getTracker().isLockdownActive()) {
             deny(event, plugin.getConfigManager().msgLockdown());
+            plugin.getAttackLogger().log("LOCKDOWN_KICK", ip, "ditolak karena lockdown mode, username=" + name);
             return;
         }
 
         // 5. Username sanity check - most bot floods use garbage usernames.
         if (plugin.getConfigManager().strictUsernameValidation() && !VALID_USERNAME.matcher(name).matches()) {
             deny(event, plugin.getConfigManager().msgInvalidUsername());
-            log("Username tidak valid ditolak: '" + name + "' dari " + ip);
+            plugin.getAttackLogger().log("INVALID_USERNAME", ip, "username='" + name + "'");
             return;
         }
 
@@ -72,9 +74,4 @@ public class ConnectionListener implements Listener {
         event.setKickMessage(message);
     }
 
-    private void log(String message) {
-        if (plugin.getConfigManager().logToConsole()) {
-            plugin.getLogger().info("[AntiDDoS] " + message);
-        }
-    }
 }

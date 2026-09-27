@@ -6,6 +6,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public class AntiDDoSCommand implements CommandExecutor {
 
     private final AntiDDoSPlugin plugin;
@@ -42,6 +48,14 @@ public class AntiDDoSCommand implements CommandExecutor {
             case "reload": {
                 plugin.getConfigManager().reload();
                 sender.sendMessage(ChatColor.GREEN + "[AntiDDoS] Konfigurasi dimuat ulang.");
+                return true;
+            }
+            case "log": {
+                int lines = 10;
+                if (args.length >= 2) {
+                    try { lines = Integer.parseInt(args[1]); } catch (NumberFormatException ignored) {}
+                }
+                sendRecentLog(sender, lines);
                 return true;
             }
             case "unlock": {
@@ -92,9 +106,37 @@ public class AntiDDoSCommand implements CommandExecutor {
         }
     }
 
+    private void sendRecentLog(CommandSender sender, int count) {
+        java.io.File logFile = plugin.getAttackLogger().getLogFile();
+        if (!logFile.exists()) {
+            sender.sendMessage(ChatColor.YELLOW + "[AntiDDoS] Belum ada log serangan.");
+            return;
+        }
+        Deque<String> lastLines = new ArrayDeque<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lastLines.addLast(line);
+                if (lastLines.size() > count) lastLines.pollFirst();
+            }
+        } catch (IOException e) {
+            sender.sendMessage(ChatColor.RED + "Gagal membaca log: " + e.getMessage());
+            return;
+        }
+        if (lastLines.isEmpty()) {
+            sender.sendMessage(ChatColor.YELLOW + "[AntiDDoS] Log kosong.");
+            return;
+        }
+        sender.sendMessage(ChatColor.GOLD + "=== " + lastLines.size() + " entri log terakhir ===");
+        for (String l : lastLines) {
+            sender.sendMessage(ChatColor.GRAY + l);
+        }
+    }
+
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== AntiDDoS-RanzDev ===");
         sender.sendMessage(ChatColor.YELLOW + "/antiddos status" + ChatColor.GRAY + " - lihat status proteksi");
+        sender.sendMessage(ChatColor.YELLOW + "/antiddos log [jumlah]" + ChatColor.GRAY + " - lihat log serangan terakhir");
         sender.sendMessage(ChatColor.YELLOW + "/antiddos reload" + ChatColor.GRAY + " - muat ulang config.yml");
         sender.sendMessage(ChatColor.YELLOW + "/antiddos unlock" + ChatColor.GRAY + " - matikan lockdown manual");
         sender.sendMessage(ChatColor.YELLOW + "/antiddos unban <ip>" + ChatColor.GRAY + " - buka blokir sebuah IP");
